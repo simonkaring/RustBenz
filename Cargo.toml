@@ -16,6 +16,7 @@ publish = false
 [workspace.dependencies]
 vehicle-core = { path = "crates/vehicle-core" }
 mercedes-client = { path = "crates/mercedes-client" }
+vehicle-storage = { path = "crates/vehicle-storage" }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

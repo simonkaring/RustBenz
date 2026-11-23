@@ -15,8 +15,9 @@ fn endpoints(server: &MockServer) -> Endpoints {
     let base = Url::parse(&server.uri()).expect("mock url");
     Endpoints {
         login: base.clone(),
-        rest: base.clone(),
-        widget: base,
+        rest: base,
+        // Not used by the HTTP tests; push is covered in src/push.rs.
+        websocket: Url::parse("ws://127.0.0.1:9/v2/ws").expect("ws url"),
     }
 }
 
@@ -191,24 +192,4 @@ async fn malformed_json_is_protocol_error_without_body() {
     let err = client.vehicles().await.expect_err("should fail");
     assert!(matches!(err, ProviderError::Protocol(_)));
     assert!(!err.to_string().contains("SECRET"));
-}
-
-#[tokio::test]
-async fn vehicle_attributes_are_returned_raw() {
-    let server = MockServer::start().await;
-    let tokens = login(&server).await;
-    Mock::given(path("/v1/vehicle/TESTVIN00000000001/vehicleattributes"))
-        .respond_with(ResponseTemplate::new(200).set_body_bytes(vec![0x0a, 0x01, 0x41]))
-        .mount(&server)
-        .await;
-    let client = MercedesClient::new(reqwest::Client::new(), endpoints(&server), &tokens);
-    let id = VehicleId::new("TESTVIN00000000001");
-    assert_eq!(
-        client.vehicle_attributes_raw(&id).await.expect("raw"),
-        vec![0x0a, 0x01, 0x41]
-    );
-    assert!(matches!(
-        client.state(&id).await,
-        Err(ProviderError::NotSupported(_))
-    ));
 }

@@ -8,6 +8,9 @@
 mod auth;
 mod client;
 mod endpoints;
+mod proto;
+mod push;
+mod status;
 mod wire;
 
 pub use auth::{AuthError, PkceLogin, TokenSet, parse_callback, refresh};

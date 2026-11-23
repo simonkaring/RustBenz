@@ -9,6 +9,8 @@ publish.workspace = true
 [dependencies]
 vehicle-core.workspace = true
 mercedes-client.workspace = true
+vehicle-storage.workspace = true
+dirs = "6"
 serde_json.workspace = true
 tokio.workspace = true
 clap = { version = "4", features = ["derive"] }

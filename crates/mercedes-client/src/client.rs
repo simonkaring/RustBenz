@@ -6,7 +6,10 @@ use vehicle_core::{
 
 use crate::auth::TokenSet;
 use crate::endpoints::{self, Endpoints};
-use crate::wire;
+use crate::{push, wire};
+
+/// How long to wait for the first status push after connecting.
+const PUSH_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
 /// A raw Mercedes command capability (`commandName` / `isAvailable`).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -46,21 +49,6 @@ impl MercedesClient {
         );
         let body: wire::CommandsResponse = self.get_json(url).await?;
         Ok(body.into_commands())
-    }
-
-    /// `GET {widget}/v1/vehicle/{vin}/vehicleattributes` â€” undecoded protobuf.
-    ///
-    /// The message type is disputed between reference implementations
-    /// (`VehicleStatusUpdate` vs `VEPUpdate`); decoding waits for an
-    /// authorized capture. See knowledge/mercedes/vehicle-state.md.
-    pub async fn vehicle_attributes_raw(&self, id: &VehicleId) -> Result<Vec<u8>, ProviderError> {
-        let url = endpoints::join(
-            &self.endpoints.widget,
-            &["v1", "vehicle", id.as_str(), "vehicleattributes"],
-        );
-        let response = self.get(url).await?;
-        let bytes = response.bytes().await.map_err(network)?;
-        Ok(bytes.to_vec())
     }
 
     async fn get_json<T: serde::de::DeserializeOwned>(&self, url: Url) -> Result<T, ProviderError> {
@@ -132,10 +120,15 @@ impl VehicleProvider for MercedesClient {
         Ok(body.into_vehicles())
     }
 
-    async fn state(&self, _id: &VehicleId) -> Result<VehicleState, ProviderError> {
-        Err(ProviderError::NotSupported(
-            "vehicle status decoding is pending protocol verification",
-        ))
+    /// One websocket connection: first status update for this vehicle, then close.
+    async fn state(&self, id: &VehicleId) -> Result<VehicleState, ProviderError> {
+        push::fetch_state(
+            &self.endpoints.websocket,
+            endpoints::websocket_headers(&self.access_token, &self.session_id),
+            id,
+            PUSH_TIMEOUT,
+        )
+        .await
     }
 
     async fn capabilities(&self, id: &VehicleId) -> Result<Capabilities, ProviderError> {

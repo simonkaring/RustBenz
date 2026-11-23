@@ -11,7 +11,7 @@ use std::time::{Duration, SystemTime};
 
 use clap::{Parser, Subcommand};
 use mercedes_client::{AuthError, Endpoints, MercedesClient, PkceLogin, TokenSet};
-use vehicle_core::{ProviderError, Vehicle, VehicleProvider};
+use vehicle_core::{ProviderError, Reading, Vehicle, VehicleProvider, VehicleState};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -50,14 +50,11 @@ enum AuthCommand {
 enum VehiclesCommand {
     /// List vehicles on the account (identifiers are redacted).
     List,
-    /// Show vehicle status.
+    /// Show battery, charging and climate status (one push-channel connection).
     Status {
         /// Last characters of the VIN; required if the account has several vehicles.
         #[arg(long)]
         vehicle: Option<String>,
-        /// Write the raw protobuf status response to this file (contains sensitive data).
-        #[arg(long)]
-        raw_out: Option<PathBuf>,
     },
     /// Show remote features available for a vehicle.
     Capabilities {
@@ -234,28 +231,93 @@ async fn vehicles(client: &MercedesClient, cmd: VehiclesCommand) -> Result<()> {
                 println!("  [{}] {}", if c.available { "x" } else { " " }, c.name);
             }
         }
-        VehiclesCommand::Status { vehicle, raw_out } => {
+        VehiclesCommand::Status { vehicle } => {
             let v = select(&all, vehicle.as_deref())?;
-            match client.state(&v.id).await {
-                Ok(state) => println!("{state:#?}"),
-                Err(ProviderError::NotSupported(why)) => println!("Status not available: {why}."),
-                Err(e) => return Err(e.into()),
-            }
-            if let Some(path) = raw_out {
-                let bytes = client.vehicle_attributes_raw(&v.id).await?;
-                std::fs::write(&path, &bytes)?;
-                println!(
-                    "Wrote {} bytes of raw protobuf to {}.\n\
-                     It contains your VIN and possibly location data: do not commit or share it.\n\
-                     Inspect with: protoc --decode_raw < {}",
-                    bytes.len(),
-                    path.display(),
-                    path.display()
-                );
-            }
+            let state = client.state(&v.id).await?;
+            print_state(&state, SystemTime::now());
+            let path = snapshot_db()?;
+            vehicle_storage::Store::open(&path)?.save_snapshot(&state)?;
+            println!("\nSnapshot saved to {}", path.display());
         }
     }
     Ok(())
+}
+
+fn snapshot_db() -> Result<PathBuf> {
+    let dir = dirs::data_local_dir()
+        .ok_or("no local data directory on this platform")?
+        .join("rustbenz");
+    std::fs::create_dir_all(&dir)?;
+    Ok(dir.join("snapshots.sqlite"))
+}
+
+fn print_state(s: &VehicleState, now: SystemTime) {
+    println!("Vehicle {}", s.vehicle_id);
+    row(
+        "Battery",
+        s.battery.state_of_charge.as_ref(),
+        |p| format!("{:.0} %", p.get()),
+        now,
+    );
+    row(
+        "Electric range",
+        s.battery.electric_range.as_ref(),
+        |k| format!("{:.0} km", k.get()),
+        now,
+    );
+    row(
+        "Charging",
+        s.charging.status.as_ref(),
+        |c| format!("{c:?}"),
+        now,
+    );
+    row(
+        "Plugged in",
+        s.charging.plugged_in.as_ref(),
+        |b| yes_no(*b),
+        now,
+    );
+    row(
+        "Charging power",
+        s.charging.power_kw.as_ref(),
+        |kw| format!("{kw:.1} kW"),
+        now,
+    );
+    row(
+        "Preconditioning",
+        s.climate.preconditioning_active.as_ref(),
+        |b| yes_no(*b),
+        now,
+    );
+}
+
+fn row<T>(label: &str, r: Option<&Reading<T>>, value: impl Fn(&T) -> String, now: SystemTime) {
+    match r {
+        None => println!("  {label:<16} unavailable"),
+        Some(r) => println!(
+            "  {label:<16} {:<10} ({})",
+            value(&r.value),
+            age(r.observed_at, now)
+        ),
+    }
+}
+
+fn yes_no(b: bool) -> String {
+    if b { "yes" } else { "no" }.to_owned()
+}
+
+/// Vehicle-side age of a reading, so stale data is never shown as live.
+fn age(observed_at: Option<SystemTime>, now: SystemTime) -> String {
+    let Some(t) = observed_at else {
+        return "time unknown".to_owned();
+    };
+    let secs = now.duration_since(t).map(|d| d.as_secs()).unwrap_or(0);
+    match secs {
+        0..60 => "just now".to_owned(),
+        60..3600 => format!("{} min ago", secs / 60),
+        3600..86_400 => format!("{} h ago", secs / 3600),
+        _ => format!("{} days ago", secs / 86_400),
+    }
 }
 
 fn select<'a>(vehicles: &'a [Vehicle], suffix: Option<&str>) -> Result<&'a Vehicle> {
@@ -283,6 +345,22 @@ mod tests {
             id: VehicleId::new(id),
             model: None,
         }
+    }
+
+    #[test]
+    fn age_is_relative_to_vehicle_timestamp() {
+        let now = SystemTime::UNIX_EPOCH + Duration::from_secs(1_000_000);
+        let ago = |s| Some(now - Duration::from_secs(s));
+        assert_eq!(age(None, now), "time unknown");
+        assert_eq!(age(ago(5), now), "just now");
+        assert_eq!(age(ago(600), now), "10 min ago");
+        assert_eq!(age(ago(7200), now), "2 h ago");
+        assert_eq!(age(ago(3 * 86_400), now), "3 days ago");
+        assert_eq!(
+            age(Some(now + Duration::from_secs(30)), now),
+            "just now",
+            "clock skew"
+        );
     }
 
     #[test]

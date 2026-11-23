@@ -27,8 +27,8 @@ pub struct Endpoints {
     pub login: Url,
     /// Mobile SDK backend-for-frontend (JSON REST).
     pub rest: Url,
-    /// Widget host (protobuf vehicle attributes).
-    pub widget: Url,
+    /// Protobuf push channel.
+    pub websocket: Url,
 }
 
 impl Endpoints {
@@ -37,7 +37,7 @@ impl Endpoints {
             login: Url::parse("https://id.mercedes-benz.com").expect("static URL"),
             rest: Url::parse("https://bff.emea-prod.mobilesdk.mercedes-benz.com")
                 .expect("static URL"),
-            widget: Url::parse("https://widget.emea-prod.mobilesdk.mercedes-benz.com")
+            websocket: Url::parse("wss://websocket.emea-prod.mobilesdk.mercedes-benz.com/v2/ws")
                 .expect("static URL"),
         }
     }
@@ -96,6 +96,25 @@ pub(crate) fn rest_headers(access_token: &str, session_id: &str) -> HeaderMap {
     h
 }
 
+/// Websocket handshake headers (websocket.py `_websocket_connection_headers`
+/// L558-580 + `apply_websocket_headers`). Note: no `Bearer` prefix.
+pub(crate) fn websocket_headers(access_token: &str, session_id: &str) -> HeaderMap {
+    let mut h = HeaderMap::new();
+    insert(&mut h, "authorization", access_token);
+    insert(&mut h, "app-session-id", session_id);
+    insert(&mut h, "output-format", "PROTO");
+    insert(&mut h, "x-sessionid", session_id);
+    insert(&mut h, "x-trackingid", &new_uuid());
+    insert(&mut h, "ris-os-name", OS_NAME);
+    insert(&mut h, "ris-os-version", OS_VERSION);
+    insert(&mut h, "ris-sdk-version", SDK_VERSION);
+    insert(&mut h, "ris-application-version", APPLICATION_VERSION);
+    insert(&mut h, "x-applicationname", APPLICATION_NAME);
+    insert(&mut h, "x-locale", LOCALE);
+    insert(&mut h, "user-agent", USER_AGENT);
+    h
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -108,5 +127,18 @@ mod tests {
             url.as_str(),
             "https://example.test/v1/vehicle/a%2Fb/capabilities"
         );
+    }
+
+    #[test]
+    fn websocket_headers_use_raw_token_and_proto_output() {
+        let h = websocket_headers("tok", "SESSION");
+        assert_eq!(
+            h["authorization"], "tok",
+            "no Bearer prefix on the websocket"
+        );
+        assert_eq!(h["output-format"], "PROTO");
+        assert_eq!(h["app-session-id"], "SESSION");
+        assert_eq!(h["x-sessionid"], "SESSION");
+        assert_eq!(h["x-applicationname"], "mycar-store-ece");
     }
 }
