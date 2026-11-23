@@ -137,6 +137,17 @@ where
             ),
             None => continue, // other message types are not needed for a one-shot read
         };
+        if let Some((full, _)) = &found {
+            let kind = match ack {
+                client_message::Msg::AcknowledgeVehicleStatusUpdates(_) => "vehicle_status_updates",
+                client_message::Msg::AcknowledgeVepUpdatesByVin(_) => "vep_updates",
+            };
+            tracing::debug!(
+                kind,
+                full_update = full,
+                "status update for vehicle received"
+            );
+        }
         let ack = proto::ClientMessage { msg: Some(ack) }.encode_to_vec();
         if let Err(e) = ws.send(Message::Binary(ack.into())).await {
             return Err(ProviderError::Network(Box::new(e)));
