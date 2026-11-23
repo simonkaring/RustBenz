@@ -1,0 +1,11 @@
+# Knowledge Update Log
+
+## 2026-11-23
+* **Update**: The widget status endpoint returned HTTP 400 live, twice, with headers matching the source. Its message type is resolved as `VehicleStatusUpdate` (mbapi2020 PR #461), but it lacks charging and climate data. The websocket is now the planned status channel ([vehicle state](mercedes/vehicle-state.md), [current state](roadmap/current-state.md)).
+* **Update**: Verified live: [vehicle discovery](mercedes/vehicle-discovery.md) (one EQA 250 SUV) and [capabilities](mercedes/capabilities.md) (61 commands, 11 available, including preconditioning start/stop).
+* **Update**: The second live login stored its tokens. The access token lifetime is about 4 h and a refresh token is issued. An existing sign-in redirects to the callback immediately ([authentication](mercedes/authentication.md)).
+* **Update**: The first live login confirmed browser-paste PKCE on desktop ([authentication](mercedes/authentication.md)). The token set exceeds the Windows 2560-byte credential limit, so CLI storage now splits it into chunks ([credential storage](decisions/credential-storage.md)).
+* **Initialization**: Created the OKF v0.3 bundle with sections for architecture, decisions, domain, mercedes and roadmap.
+* **Creation**: Recorded six accepted decisions: [shared Rust core](decisions/shared-rust-core.md), [UniFFI](decisions/uniffi-interop.md), [provider abstraction](decisions/provider-abstraction.md), [local-first](decisions/local-first.md), [Mercedes isolation](decisions/mercedes-isolation.md) and [credential storage](decisions/credential-storage.md).
+* **Creation**: Documented Mercedes protocol research from mbapi2020 @ 6976c44, mercedes-explore, the Homey app and the official developer docs ([protocol research](mercedes/protocol-research.md)). Re-checked the auth, discovery and capability facts against the source.
+* **Creation**: Documented the [system overview](architecture/system-overview.md), [domain model](domain/vehicle-state.md) and [current state](roadmap/current-state.md), matching the initial Rust implementation.
