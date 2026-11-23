@@ -1,0 +1,6 @@
+[bindings.kotlin]
+package_name = "app.rustbenz.core"
+cdylib_name = "vehicle_ffi"
+
+[bindings.swift]
+module_name = "RustBenzCore"

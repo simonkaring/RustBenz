@@ -12,7 +12,6 @@ use std::time::{Duration, SystemTime};
 use futures_util::{SinkExt, StreamExt};
 use prost::Message as _;
 use reqwest::header::HeaderMap;
-use rustls_platform_verifier::BuilderVerifierExt;
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::{self, Message, client::IntoClientRequest};
@@ -165,12 +164,7 @@ where
 }
 
 fn tls_connector() -> Result<tokio_rustls::TlsConnector, ProviderError> {
-    let provider = Arc::new(rustls::crypto::aws_lc_rs::default_provider());
-    let config = rustls::ClientConfig::builder_with_provider(provider)
-        .with_safe_default_protocol_versions()
-        .and_then(|b| b.with_platform_verifier())
-        .map_err(|e| ProviderError::Network(Box::new(e)))?
-        .with_no_client_auth();
+    let config = crate::tls::client_config().map_err(|e| ProviderError::Network(Box::new(e)))?;
     Ok(tokio_rustls::TlsConnector::from(Arc::new(config)))
 }
 

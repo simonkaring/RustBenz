@@ -9,9 +9,25 @@ publish.workspace = true
 [lib]
 crate-type = ["lib", "cdylib", "staticlib"]
 
+[[bin]]
+# Generates Kotlin/Swift bindings: cargo run -p vehicle-ffi --features bindgen --bin uniffi-bindgen -- generate ...
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["bindgen"]
+
+[features]
+bindgen = ["uniffi/cli"]
+
 [dependencies]
 vehicle-core.workspace = true
-uniffi = "0.32"
+mercedes-client.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uniffi = { version = "0.32", features = ["tokio"] }
+reqwest = { version = "0.13", default-features = false }
+
+[dev-dependencies]
+tokio.workspace = true
 
 [lints]
 workspace = true
