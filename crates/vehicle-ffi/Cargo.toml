@@ -1,0 +1,17 @@
+[package]
+name = "vehicle-ffi"
+description = "UniFFI bindings exposing the RustBenz core to Swift and Kotlin."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+vehicle-core.workspace = true
+uniffi = "0.32"
+
+[lints]
+workspace = true

@@ -1,0 +1,12 @@
+{
+  "_comment": "SYNTHETIC fixture. Shape follows mbapi2020 __init__.py L106-137; not a captured response.",
+  "commands": [
+    { "commandName": "ZEV_PRECONDITIONING_START", "isAvailable": true, "parameters": [] },
+    { "commandName": "ZEV_PRECONDITIONING_STOP", "isAvailable": true },
+    { "commandName": "CHARGE_PROGRAM_CONFIGURE", "isAvailable": false,
+      "parameters": [ { "parameterName": "MAX_SOC", "allowedEnums": null } ] },
+    { "commandName": "DOORS_LOCK" },
+    { "commandName": "SOME_FUTURE_COMMAND", "isAvailable": true },
+    { "isAvailable": true }
+  ]
+}

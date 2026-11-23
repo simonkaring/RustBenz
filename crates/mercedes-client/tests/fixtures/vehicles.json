@@ -1,0 +1,18 @@
+{
+  "_comment": "SYNTHETIC fixture. Shape follows mbapi2020 __init__.py parsing; not a captured response.",
+  "fleets": [
+    { "bookedVehicles": [ { "vin": "TESTVIN00000000002", "licensePlate": "TEST 2" } ] }
+  ],
+  "assignedVehicles": [
+    {
+      "vin": "TESTVIN00000000001",
+      "licensePlate": "TEST 1",
+      "isOwner": true,
+      "salesRelatedInformation": { "baumuster": { "baumusterDescription": "EQA 250" } },
+      "someFutureField": { "nested": [1, 2, 3] }
+    },
+    { "vin": "TESTVIN00000000002" },
+    { "fin": "TESTFIN00000000003", "salesRelatedInformation": null },
+    { "licensePlate": "NO ID" }
+  ]
+}
