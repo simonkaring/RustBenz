@@ -9,6 +9,7 @@ cargo test --workspace
 cargo run -p eqa -- auth login       # browser sign-in; tokens go to the OS keyring
 cargo run -p eqa -- vehicles list
 cargo run -p eqa -- vehicles capabilities
+cargo run -p eqa -- vehicles status       # one websocket read; snapshot saved locally
 ```
 
 Start with [`AGENTS.md`](AGENTS.md) and [`knowledge/index.md`](knowledge/index.md).

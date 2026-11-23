@@ -4,7 +4,7 @@ title: Vehicle, state and capabilities
 description: Manufacturer-independent vehicle model — readings with timestamps, battery/charging/climate state, capabilities, and error taxonomy.
 tags: [domain, battery, charging, climate]
 status: stable
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T19:08:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T21:15:00Z" }
 x-rustbenz-implementation: crates/vehicle-core/src
 ---
 
@@ -33,8 +33,16 @@ x-rustbenz-implementation: crates/vehicle-core/src
 | `ProviderError` | `NotAuthenticated`, `SessionExpired`, `Forbidden`, `RateLimited`, `VehicleNotFound`, `Network`, `Protocol`, `NotSupported` |
 
 `ChargingStatus` has the variants `Charging`, `NotCharging`, `Complete`,
-`Fault` and `Unrecognized`. It is the target model; the Mercedes code mapping
-is not yet known (see [Mercedes vehicle state](../mercedes/vehicle-state.md)).
+`Fault` and `Unrecognized`. The Mercedes codes map as follows (see
+[Mercedes vehicle state](../mercedes/vehicle-state.md)):
+
+| Domain | Mercedes codes |
+|---|---|
+| `Charging` | all charging codes (0, 5, 6, 9–11, 13, 14) |
+| `Complete` | 1 |
+| `NotCharging` | break, unplugged, no charging, no energy flow (2, 3, 8, 12) |
+| `Fault` | 4 |
+| `Unrecognized` | discharging, SoH calibration, unknown or new codes |
 
 Command types (accepted versus confirmed) are deliberately not defined yet.
 See [remote commands](../mercedes/remote-commands.md) for the intended

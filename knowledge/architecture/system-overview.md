@@ -4,7 +4,7 @@ title: System overview
 description: Crate layout, responsibilities, dependency rules and data flow of the RustBenz monorepo.
 tags: [architecture, rust, workspace]
 status: stable
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T19:08:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T21:15:00Z" }
 x-rustbenz-implementation: Cargo.toml
 ---
 
@@ -42,10 +42,13 @@ eqa ─► mercedes-client ─► vehicle-core ◄─ vehicle-storage
 2. Before each command, the CLI loads the tokens and refreshes them if they
    expire within 60 s. It stores the new tokens, then builds a
    `MercedesClient`.
-3. The client implements `VehicleProvider`: `vehicles`, `capabilities`, and
-   `state` (which currently returns `NotSupported`).
-4. `vehicle-storage` can persist `VehicleState` snapshots. No caller uses it
-   yet, because live state is not decoded.
+3. The client implements `VehicleProvider`:
+   - `vehicles` and `capabilities` use JSON REST.
+   - `state` opens one websocket connection, decodes the first protobuf
+     status update and closes
+     ([Mercedes vehicle state](../mercedes/vehicle-state.md)).
+4. `eqa vehicles status` saves each `VehicleState` snapshot through
+   `vehicle-storage` to `<local data dir>/rustbenz/snapshots.sqlite`.
 
 # Conventions
 

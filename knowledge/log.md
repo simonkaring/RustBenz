@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-11-23
+* **Update**: Vehicle status is now read from the websocket push channel and verified live on the EQA. SoC, range, charging status and preconditioning arrived; plugged-in and charging power were unavailable. Documented the message subset, value semantics and the `chargingstatus` codes ([vehicle state](mercedes/vehicle-state.md), [domain](domain/vehicle-state.md)). The widget endpoint code was removed. The next task is climate start/stop ([current state](roadmap/current-state.md)).
 * **Update**: The widget status endpoint returned HTTP 400 live, twice, with headers matching the source. Its message type is resolved as `VehicleStatusUpdate` (mbapi2020 PR #461), but it lacks charging and climate data. The websocket is now the planned status channel ([vehicle state](mercedes/vehicle-state.md), [current state](roadmap/current-state.md)).
 * **Update**: Verified live: [vehicle discovery](mercedes/vehicle-discovery.md) (one EQA 250 SUV) and [capabilities](mercedes/capabilities.md) (61 commands, 11 available, including preconditioning start/stop).
 * **Update**: The second live login stored its tokens. The access token lifetime is about 4 h and a refresh token is issued. An existing sign-in redirects to the callback immediately ([authentication](mercedes/authentication.md)).
