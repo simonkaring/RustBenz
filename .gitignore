@@ -1,0 +1,6 @@
+/target
+*.sqlite
+# Raw vehicle captures (eqa vehicles status --raw-out) contain VINs/locations.
+*.pb
+*.bin
+captures/
