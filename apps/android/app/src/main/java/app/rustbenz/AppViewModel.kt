@@ -18,6 +18,9 @@ import kotlinx.coroutines.launch
 sealed interface UiState {
     data object Starting : UiState
 
+    /** Design preview with sample data; no account, nothing sent to Mercedes. */
+    data object Preview : UiState
+
     data class SignedOut(val message: String? = null, val busy: Boolean = false) : UiState
 
     data class Dashboard(
@@ -87,6 +90,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         } catch (e: CoreException) {
             fail(e)
         }
+    }
+
+    fun explore() {
+        _ui.value = UiState.Preview
     }
 
     fun signOut() {
