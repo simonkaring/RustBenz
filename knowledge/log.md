@@ -1,5 +1,9 @@
 # Knowledge Update Log
 
+## 2026-11-24
+* **Creation**: Added [mobile integration](architecture/mobile-integration.md), covering the UniFFI API (`PendingLogin`, `Session`, `CoreError`), the Android build pipeline (cargo-ndk plus bindgen at build time), Custom Tab login, Keystore token storage, the Android TLS shortcut and toolchain versions.
+* **Update**: Revised the [system overview](architecture/system-overview.md), the [UniFFI decision](decisions/uniffi-interop.md), [credential storage](decisions/credential-storage.md), [authentication](mercedes/authentication.md) (mobile variant, unverified) and [current state](roadmap/current-state.md). The next task is live-testing the Android app.
+
 ## 2026-11-23
 * **Update**: Vehicle status is now read from the websocket push channel and verified live on the EQA. SoC, range, charging status and preconditioning arrived; plugged-in and charging power were unavailable. Documented the message subset, value semantics and the `chargingstatus` codes ([vehicle state](mercedes/vehicle-state.md), [domain](domain/vehicle-state.md)). The widget endpoint code was removed. The next task is climate start/stop ([current state](roadmap/current-state.md)).
 * **Update**: The widget status endpoint returned HTTP 400 live, twice, with headers matching the source. Its message type is resolved as `VehicleStatusUpdate` (mbapi2020 PR #461), but it lacks charging and climate data. The websocket is now the planned status channel ([vehicle state](mercedes/vehicle-state.md), [current state](roadmap/current-state.md)).

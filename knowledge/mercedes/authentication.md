@@ -5,7 +5,7 @@ description: Authorization-code + PKCE login against id.mercedes-benz.com, token
 tags: [mercedes, authentication, oauth, security]
 status: stable
 x-rustbenz-evidence: live-verified
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T19:40:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 verified:
   - { by: opencode/claude-opus-5-5, at: "2026-11-23T19:08:00Z" }
   - { by: "process:eqa-live-login", at: "2026-11-23T19:40:00Z" }
@@ -92,6 +92,21 @@ If this fails, the fallback options for mobile are an in-app web view
 (ASWebAuthenticationSession / Custom Tabs) that intercepts the `rismycar`
 scheme, or the scripted flow. The scripted flow would need an explicit
 decision because it handles the password.
+
+**Mobile variant (Android, implemented, live-UNVERIFIED):**
+
+1. The app opens the same authorization URL in a Custom Tab.
+2. The app registers an intent filter for `rismycar://login-callback`, so the
+   redirect returns to it directly, with no copying or pasting.
+3. The PKCE verifier stays in Rust memory (`PendingLogin`).
+
+Open hypotheses:
+- Chrome follows a server redirect to a custom scheme when no user gesture
+  is involved, for example the instant redirect when already signed in.
+- Mercedes does not reject the redirect for a third-party app.
+
+On phones with the official app installed, both apps claim the scheme. See
+[mobile integration](../architecture/mobile-integration.md).
 
 Simplifications versus mbapi2020 (each marked `shortcut:` in code):
 

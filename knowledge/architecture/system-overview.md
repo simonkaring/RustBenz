@@ -4,27 +4,29 @@ title: System overview
 description: Crate layout, responsibilities, dependency rules and data flow of the RustBenz monorepo.
 tags: [architecture, rust, workspace]
 status: stable
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T21:15:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 x-rustbenz-implementation: Cargo.toml
 ---
 
 # Layout
 
 ```text
-apps/cli            eqa binary: developer CLI and live-integration harness
-apps/ios, android   native shells (not started)
+apps/cli                 eqa binary: developer CLI and live-integration harness
+apps/android             Kotlin + Compose read-only dashboard (see mobile-integration)
+apps/ios                 not started (needs macOS)
 crates/vehicle-core      domain types, VehicleProvider trait, ProviderError
-crates/mercedes-client   unofficial Mercedes API: auth, REST, normalization
+crates/mercedes-client   unofficial Mercedes API: auth, REST, websocket, normalization
 crates/vehicle-storage   SQLite snapshot store (rusqlite, bundled)
-crates/vehicle-ffi       UniFFI records for Swift/Kotlin
+crates/vehicle-ffi       UniFFI API for Swift/Kotlin (PendingLogin, Session, records)
 knowledge/               this OKF bundle
 ```
 
 # Dependency rules
 
 ```text
-eqa ─► mercedes-client ─► vehicle-core ◄─ vehicle-storage
-                                       ◄─ vehicle-ffi
+eqa ──────────► mercedes-client ─► vehicle-core ◄─ vehicle-storage
+ └─► vehicle-storage      ▲              ▲
+android/ios ─► vehicle-ffi ┴──────────────┘
 ```
 
 - `vehicle-core` depends on nothing project-specific. It holds no I/O and no

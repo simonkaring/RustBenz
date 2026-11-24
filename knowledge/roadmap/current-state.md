@@ -4,7 +4,7 @@ title: Current project state
 description: What is implemented and verified, what is not, open technical questions, and the next task.
 tags: [roadmap, status]
 status: stable
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T21:15:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 ---
 
 # Implemented
@@ -13,7 +13,8 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T21:15:00Z" }
 |---|---|
 | Workspace, domain model, provider trait | Done |
 | SQLite snapshot store with migrations | Done; used by `eqa vehicles status` |
-| UniFFI records (`vehicle-ffi`) | Records and conversions only; Swift/Kotlin generation not set up |
+| UniFFI API (`vehicle-ffi`) | `PendingLogin`, `Session` and records; Kotlin generated at build time |
+| Android app | Read-only dashboard; builds and starts on the emulator. **Live login and status on Android not yet tested** |
 | PKCE login, code exchange | Done; **verified live** (2026-11-23, EU account, desktop browser) |
 | Token refresh | Done; live-unverified |
 | `eqa auth login / status / logout` | Done; tokens split across several OS keyring entries (Windows 2560-byte limit) |
@@ -21,7 +22,7 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T21:15:00Z" }
 | `eqa vehicles capabilities` | Done; **verified live**; preconditioning start/stop available |
 | `eqa vehicles status` | Done via websocket push; **verified live**. SoC, range, charging status and preconditioning present; plugged-in and charging power unavailable |
 | Climate start/stop | Not started; protocol documented in [remote commands](../mercedes/remote-commands.md) |
-| iOS / Android apps | Not started |
+| iOS app | Not started (needs macOS/Xcode) |
 
 All automated tests use mocks: wiremock for HTTP and a local websocket server
 for push, with synthetic fixtures only.
@@ -42,13 +43,20 @@ for push, with synthetic fixtures only.
    safe at, for example, a few calls per hour?
 7. Does token refresh work live? It will be exercised automatically once the
    ~4 h access token expires.
-8. Mobile login: can an in-app browser session (ASWebAuthenticationSession /
-   Custom Tabs) intercept the `rismycar://` redirect for a third-party
-   bundle ID?
+8. Mobile login: does the Android Custom Tab plus `rismycar://` intent filter
+   work live (test on the emulator next)? What happens on phones that also
+   have the official app?
+9. Android TLS uses bundled webpki roots. Switch to rustls-platform-verifier
+   (JNI init and Gradle component) when user or enterprise CAs matter.
 
 # Next task (recommended)
 
-**Remote climate preconditioning (start/stop).** This needs explicit user
+**First: live-test the Android app on the emulator.** The user signs in
+through the Custom Tab, then the dashboard loads. Record the result in
+[authentication](../mercedes/authentication.md) and
+[mobile integration](../architecture/mobile-integration.md).
+
+**Then: remote climate preconditioning (start/stop).** This needs explicit user
 confirmation for every live command.
 
 1. Extend `proto.rs` with `CommandRequest` and the ZEV preconditioning

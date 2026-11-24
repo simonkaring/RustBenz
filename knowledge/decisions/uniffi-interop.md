@@ -5,7 +5,7 @@ description: The Rust core is exposed to iOS and Android through UniFFI from a s
 tags: [decision, ffi, mobile]
 status: stable
 x-rustbenz-decision-status: accepted
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T18:46:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 ---
 
 # Decision
@@ -15,6 +15,10 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T18:46:00Z" }
 - Domain crates stay free of FFI attributes so they remain idiomatic Rust and
   usable from the CLI and tests without binding concerns.
 - UniFFI proc-macro mode (`uniffi::setup_scaffolding!`) is used; no UDL files.
+- `vehicle-ffi` is the composition point for apps. It depends on
+  `mercedes-client` and exports async objects (`PendingLogin`, `Session`) on
+  UniFFI's tokio runtime. Bindings are generated at build time, not
+  committed. See [mobile integration](../architecture/mobile-integration.md).
 
 # Alternatives considered
 
@@ -28,7 +32,7 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T18:46:00Z" }
 
 - Each exported type exists twice (domain + FFI record). Conversions are
   unit-tested in `vehicle-ffi`.
-- Swift/Kotlin binding generation and on-device testing are not yet set up
-  (see [current state](../roadmap/current-state.md)).
+- Kotlin binding generation and an emulator run are set up for Android. Swift
+  is not started (see [current state](../roadmap/current-state.md)).
 
 Related: [shared Rust core](shared-rust-core.md).

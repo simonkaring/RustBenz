@@ -5,7 +5,7 @@ description: Tokens are stored only in OS credential stores, never in files, log
 tags: [decision, security, authentication]
 status: stable
 x-rustbenz-decision-status: accepted
-generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T19:40:00Z" }
+generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 ---
 
 # Decision
@@ -13,7 +13,12 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-23T19:40:00Z" }
 - Access and refresh tokens are stored in platform secure storage:
   - CLI: OS keyring via the `keyring` crate (Windows Credential Manager,
     macOS Keychain, Linux Secret Service).
-  - iOS: Keychain. Android: Android Keystore-backed storage.
+  - iOS: Keychain (planned).
+  - Android: the token JSON is encrypted with AES-256-GCM using a
+    non-exportable Android Keystore key and stored in private
+    SharedPreferences, with `allowBackup="false"` (`apps/android/.../TokenStore.kt`).
+    `EncryptedSharedPreferences` is not used, because the library is
+    deprecated.
 - Windows limits one credential to 2560 bytes, and the Mercedes token set is
   larger (confirmed live). The CLI therefore stores the JSON in 2048-byte
   chunks (`mercedes-europe.0`, `.1`, …). The `mercedes-europe` entry holds
