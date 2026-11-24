@@ -14,7 +14,7 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 | Workspace, domain model, provider trait | Done |
 | SQLite snapshot store with migrations | Done; used by `eqa vehicles status` |
 | UniFFI API (`vehicle-ffi`) | `PendingLogin`, `Session` and records; Kotlin generated at build time |
-| Android app | Read-only dashboard; builds and starts on the emulator. **Live login and status on Android not yet tested** |
+| Android app | Read-only dashboard; **verified live on the emulator** (login, vehicle, status) on 2026-11-24 |
 | PKCE login, code exchange | Done; **verified live** (2026-11-23, EU account, desktop browser) |
 | Token refresh | Done; live-unverified |
 | `eqa auth login / status / logout` | Done; tokens split across several OS keyring entries (Windows 2560-byte limit) |
@@ -43,20 +43,15 @@ for push, with synthetic fixtures only.
    safe at, for example, a few calls per hour?
 7. Does token refresh work live? It will be exercised automatically once the
    ~4 h access token expires.
-8. Mobile login: does the Android Custom Tab plus `rismycar://` intent filter
-   work live (test on the emulator next)? What happens on phones that also
-   have the official app?
+8. Mobile login works on the emulator. What happens on real phones that also
+   have the official app (both claim `rismycar://`)?
 9. Android TLS uses bundled webpki roots. Switch to rustls-platform-verifier
    (JNI init and Gradle component) when user or enterprise CAs matter.
 
 # Next task (recommended)
 
-**First: live-test the Android app on the emulator.** The user signs in
-through the Custom Tab, then the dashboard loads. Record the result in
-[authentication](../mercedes/authentication.md) and
-[mobile integration](../architecture/mobile-integration.md).
-
-**Then: remote climate preconditioning (start/stop).** This needs explicit user
+**Remote climate preconditioning (start/stop)**, first in the CLI, then as a
+dashboard control in the Android app. This needs explicit user
 confirmation for every live command.
 
 1. Extend `proto.rs` with `CommandRequest` and the ZEV preconditioning

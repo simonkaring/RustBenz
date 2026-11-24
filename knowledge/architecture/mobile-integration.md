@@ -48,7 +48,19 @@ secure storage ([credential storage](../decisions/credential-storage.md)).
 
 Verified on 2026-11-24: `assembleDebug` and the unit tests pass. The app
 installs and starts on an emulator (API 36.1 Google Play x86_64, WHPX).
-**Not yet verified:** live login and status on Android.
+
+**Verified live on the emulator (2026-11-24):**
+- Custom Tab login: the `rismycar://` redirect reached the app, and the code
+  exchange succeeded.
+- Tokens persisted and survived a reinstall with `-r`.
+- The vehicle list loaded.
+- The status loaded over the websocket, showing SoC, range, charging status
+  and climate. As on the CLI, plugged-in and charging power were not
+  reported.
+
+One cold start showed a transient `Network` error before the vehicle list
+loaded; the next start succeeded, and the cause is unknown. Failures are now
+logged under the `RustBenz` logcat tag, with the full error chain.
 
 Known limits:
 - The first vehicle is used; there is no vehicle picker.

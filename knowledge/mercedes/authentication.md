@@ -93,17 +93,17 @@ If this fails, the fallback options for mobile are an in-app web view
 scheme, or the scripted flow. The scripted flow would need an explicit
 decision because it handles the password.
 
-**Mobile variant (Android, implemented, live-UNVERIFIED):**
+**Mobile variant (Android). Verified live on the emulator on 2026-11-24;
+the redirect reached the app:**
 
 1. The app opens the same authorization URL in a Custom Tab.
 2. The app registers an intent filter for `rismycar://login-callback`, so the
    redirect returns to it directly, with no copying or pasting.
 3. The PKCE verifier stays in Rust memory (`PendingLogin`).
 
-Open hypotheses:
-- Chrome follows a server redirect to a custom scheme when no user gesture
-  is involved, for example the instant redirect when already signed in.
-- Mercedes does not reject the redirect for a third-party app.
+Still open:
+- The behaviour of the instant redirect when the user is already signed in
+  (no user gesture) has not been tested in Chrome.
 
 On phones with the official app installed, both apps claim the scheme. See
 [mobile integration](../architecture/mobile-integration.md).
