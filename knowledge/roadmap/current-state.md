@@ -14,7 +14,7 @@ generated: { by: opencode/claude-opus-5-5, at: "2026-11-24T09:20:00Z" }
 | Workspace, domain model, provider trait | Done |
 | SQLite snapshot store with migrations | Done; used by `eqa vehicles status` |
 | UniFFI API (`vehicle-ffi`) | `PendingLogin`, `Session` and records; Kotlin generated at build time |
-| Android app | Read-only dashboard; **verified live on the emulator** (login, vehicle, status) on 2026-11-24 |
+| Android app | **Verified live on the emulator** (login, vehicle, status). Full "dark luxury" design with five tabs: real data where available, tagged sample data elsewhere, simulated command flow ([design language](../architecture/design-language.md)) |
 | PKCE login, code exchange | Done; **verified live** (2026-11-23, EU account, desktop browser) |
 | Token refresh | Done; live-unverified |
 | `eqa auth login / status / logout` | Done; tokens split across several OS keyring entries (Windows 2560-byte limit) |

@@ -1,6 +1,7 @@
 # Knowledge Update Log
 
 ## 2026-11-24
+* **Creation**: Added the [design language](architecture/design-language.md): dark luxury palette, typography, components, five-tab information architecture, and the mandatory data-honesty rules for sample, cached and live values.
 * **Update**: The Android app is verified live on the emulator: Custom Tab login, vehicle list and websocket status. Fixed a bug that left the dashboard empty after sign-in. Recorded a transient network error on one cold start ([mobile integration](architecture/mobile-integration.md), [authentication](mercedes/authentication.md), [current state](roadmap/current-state.md)).
 * **Creation**: Added [mobile integration](architecture/mobile-integration.md), covering the UniFFI API (`PendingLogin`, `Session`, `CoreError`), the Android build pipeline (cargo-ndk plus bindgen at build time), Custom Tab login, Keystore token storage, the Android TLS shortcut and toolchain versions.
 * **Update**: Revised the [system overview](architecture/system-overview.md), the [UniFFI decision](decisions/uniffi-interop.md), [credential storage](decisions/credential-storage.md), [authentication](mercedes/authentication.md) (mobile variant, unverified) and [current state](roadmap/current-state.md). The next task is live-testing the Android app.
