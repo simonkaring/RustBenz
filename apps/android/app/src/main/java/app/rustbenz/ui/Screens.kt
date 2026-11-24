@@ -156,6 +156,14 @@ private fun DashboardScreen(state: UiState.Dashboard, onRefresh: () -> Unit, onS
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    state.vehicle != null -> Column(
+                        Modifier.fillMaxWidth().padding(top = 96.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text("No status loaded yet.", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(12.dp))
+                        Button(onClick = onRefresh) { Text("Load status") }
+                    }
                 }
             }
         }

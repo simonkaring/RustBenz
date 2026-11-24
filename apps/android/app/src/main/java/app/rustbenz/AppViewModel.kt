@@ -1,6 +1,7 @@
 package app.rustbenz
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import app.rustbenz.core.CoreException
@@ -76,14 +77,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val vehicle = current.vehicle ?: return
         if (loadJob?.isActive == true) return
         _ui.value = current.copy(loading = true, message = null)
-        loadJob = viewModelScope.launch {
-            try {
-                val s = activeSession()
-                val state = s.vehicleState(vehicle.id)
-                _ui.update { (it as? UiState.Dashboard)?.copy(state = state, loading = false) ?: it }
-            } catch (e: CoreException) {
-                fail(e)
-            }
+        loadJob = viewModelScope.launch { loadState(vehicle) }
+    }
+
+    private suspend fun loadState(vehicle: Vehicle) {
+        try {
+            val state = activeSession().vehicleState(vehicle.id)
+            _ui.update { (it as? UiState.Dashboard)?.copy(state = state, loading = false) ?: it }
+        } catch (e: CoreException) {
+            fail(e)
         }
     }
 
@@ -111,10 +113,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 val vehicle = activeSession().vehicles().firstOrNull()
                 _ui.value = UiState.Dashboard(
                     vehicle = vehicle,
-                    loading = false,
+                    loading = vehicle != null,
                     message = if (vehicle == null) "No vehicles on this account." else null,
                 )
-                if (vehicle != null) refresh()
+                // Load directly: calling refresh() here would see this job as active and skip.
+                if (vehicle != null) loadState(vehicle)
             } catch (e: CoreException) {
                 fail(e)
             }
@@ -129,6 +132,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun fail(e: CoreException) {
+        // Reasons never contain tokens or VINs (see CoreError in vehicle-ffi).
+        Log.w(TAG, "request failed: ${e::class.simpleName} ${e.message}")
         when (e) {
             is CoreException.NotAuthenticated, is CoreException.SessionExpired -> {
                 session?.close()
@@ -148,6 +153,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         pendingLogin?.close()
     }
 }
+
+private const val TAG = "RustBenz"
 
 internal fun describe(e: CoreException): String = when (e) {
     is CoreException.NotAuthenticated -> "Please sign in."

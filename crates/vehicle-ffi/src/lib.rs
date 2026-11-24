@@ -45,7 +45,7 @@ impl From<ProviderError> for CoreError {
             ProviderError::RateLimited => Self::RateLimited,
             ProviderError::VehicleNotFound => Self::VehicleNotFound,
             ProviderError::Network(e) => Self::Network {
-                reason: e.to_string(),
+                reason: error_chain(e.as_ref()),
             },
             ProviderError::Protocol(reason) => Self::Protocol { reason },
             ProviderError::NotSupported(reason) => Self::Protocol {
@@ -61,13 +61,26 @@ impl From<AuthError> for CoreError {
             AuthError::Rejected(_) | AuthError::NoRefreshToken => Self::SessionExpired,
             AuthError::RateLimited => Self::RateLimited,
             AuthError::Network(e) => Self::Network {
-                reason: e.without_url().to_string(),
+                reason: error_chain(&e.without_url()),
             },
             other => Self::LoginFailed {
                 reason: other.to_string(),
             },
         }
     }
+}
+
+/// "outer: inner: root cause" — reqwest's top-level message alone is not
+/// diagnosable. Callers strip URLs (which contain VINs) before this point.
+fn error_chain(e: &(dyn std::error::Error + 'static)) -> String {
+    let mut text = e.to_string();
+    let mut source = e.source();
+    while let Some(s) = source {
+        text.push_str(": ");
+        text.push_str(&s.to_string());
+        source = s.source();
+    }
+    text
 }
 
 // ---- Login ----
